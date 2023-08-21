@@ -1,0 +1,34 @@
+version: '3'
+
+services:
+  nginx:
+    image: nginx:latest
+    container_name: ${PROJECT_NAME}-webserver
+    ports:
+      - "80:80"
+      - "443:443"
+    restart: always
+    volumes:
+      - ${WORKSPACE}/docker/nginx/conf/conf.d:/etc/nginx/conf.d:ro
+      - ${WORKSPACE}/docker/nginx/conf/certs:/etc/nginx/certs:ro
+      - ${WORKSPACE}:/var/www/html
+    depends_on:
+      - php
+    networks:
+      - internal
+
+  php:
+    build: ${WORKSPACE}/docker/php
+    container_name: ${PROJECT_NAME}-php
+    volumes:
+      - ${WORKSPACE}:/var/www/html
+    environment:
+      ENV: ${ENV:-}
+      SYMFONY_VERSION: ${SYMFONY_VERSION:-}
+      DEV_UID: ${UID}
+    networks:
+      - internal
+
+networks:
+  internal:
+    driver: bridge
