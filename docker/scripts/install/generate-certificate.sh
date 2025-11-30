@@ -1,19 +1,21 @@
 #!/bin/sh
 
-CERTS_DIR=docker/nginx/conf/certs
+CONF_DIR=docker/nginx/conf/conf.d
+TMP_DIR=docker/nginx/conf/example-tmp
+TMP_CONF_FIlE="$TMP_DIR"/host.conf.tmp
 
-if [ ! -d "$CERTS_DIR" ] || [ ! -f "$CERTS_DIR/$1.pem" ] || [ ! -f "$CERTS_DIR/$1-key.pem" ]; then
-  if ! mkcert -version > /dev/null; then
-    echo "\033[31mError: mkcert package is not installed or not executable, please install mkcert\033[m"
-    exit 0;
-  fi
-
-  if [ -d "$CERTS_DIR" ]; then
-    rm -Rf "$CERTS_DIR"
-  fi
-
-  mkdir "$CERTS_DIR"
-  cd "$CERTS_DIR"
-
-  mkcert $1
+if [ ! -d "$CONF_DIR" ]; then
+  mkdir "$CONF_DIR"
 fi
+
+if [ -f "$TMP_DIR/default.conf" ]; then
+  cp "$TMP_DIR/default.conf" "$CONF_DIR/default.conf"
+fi
+
+for i in $(echo $1 | tr ";" "\n")
+do
+  if [ ! -f "$CONF_DIR/$i.conf" ]; then
+    reg='$(HOST)'
+    sed "s/$reg/$i/g" "$TMP_CONF_FIlE" > "$CONF_DIR/$i.conf"
+  fi
+done

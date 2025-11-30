@@ -1,29 +1,23 @@
 MAKEFLAGS += --silent
 
-ifneq (,$(wildcard .env))
-	include .env
-endif
-
 ifndef ENV
 	ENV=dev
 endif
 
-# Executable
-WORKSPACE:=$(shell pwd)
-UID:=$(shell id -u)
-
-DOCKER_COMPOSE_FILE=${WORKSPACE}/docker/compose/docker-compose.yml
-CMD_DOCKER_COMPOSE=docker-compose -f ${DOCKER_COMPOSE_FILE} --project-directory ${WORKSPACE} ## Point docker to directory's root to find env file
-
-CORE_CLI=$(CMD_DOCKER_COMPOSE) exec --user www-data core
-CORE_CLI_ROOT=$(CMD_DOCKER_COMPOSE) exec core
-
-ifneq ($(ENV),dev)
-	COMPOSERARG?=--no-dev
+ifneq (,$(wildcard .env))
+	include .env
+else
+	include ./env/.env.$(ENV).dist
 endif
 
+# Executable
+WORKSPACE:=$(shell pwd)
+
 export WORKSPACE
-export UID
+
+DOCKER_COMPOSE_FILE=${WORKSPACE}/docker/compose/docker-compose.yml
+CMD_DOCKER_COMPOSE=docker compose -f ${DOCKER_COMPOSE_FILE} --project-directory ${WORKSPACE} ## Point docker to directory's root to find env file
+
 
 install: ## Install project dependencies
 	$(info --> Install for ENV: ${ENV})
@@ -53,8 +47,5 @@ build: ## docker-compose build
 stop: ## docker-compose stop
 	$(CMD_DOCKER_COMPOSE) --profile debug --profile build stop
 
-php-install-dependencies: ## Composer install
-	$(CORE_CLI) composer install $(COMPOSERARG)
-
-ssh-core: ## Ssh into php container (www-data)
-	$(CORE_CLI) sh
+ssh-php: ## Ssh into php container
+	$(CMD_DOCKER_COMPOSE) exec php sh
