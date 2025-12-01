@@ -1,7 +1,13 @@
 services:
   php:
-    image: gibass/php:8.4
+    image: gibass/php
     container_name: ${PROJECT_NAME}-php
+    environment:
+      SYMFONY_VERSION: ${SYMFONY_VERSION:-}
+      SCRIPTS_DIR: ${SCRIPTS_DIR:-}
+      APP_DIR: ${APP_DIR:-/var/www/html}
+      DEV_UID: ${UID}
+      ENV: ${ENV:-}
     volumes:
       - ${WORKSPACE}:/var/www/html
     networks:
@@ -15,6 +21,7 @@ services:
       - "443:443"
     volumes:
       - ${WORKSPACE}/docker/nginx/conf/conf.d:/etc/nginx/conf.d:ro
+      - ${WORKSPACE}/docker/nginx/conf/certs:/etc/nginx/certs
     networks:
       - internal
 

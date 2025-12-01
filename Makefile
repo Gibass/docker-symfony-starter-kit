@@ -12,12 +12,15 @@ endif
 
 # Executable
 WORKSPACE:=$(shell pwd)
+UID:=$(shell id -u)
 
 export WORKSPACE
+export UID
 
 DOCKER_COMPOSE_FILE=${WORKSPACE}/docker/compose/docker-compose.yml
 CMD_DOCKER_COMPOSE=docker compose -f ${DOCKER_COMPOSE_FILE} --project-directory ${WORKSPACE} ## Point docker to directory's root to find env file
 
+PHP_CLI=$(CMD_DOCKER_COMPOSE) exec --user www-data php
 
 install: ## Install project dependencies
 	$(info --> Install for ENV: ${ENV})
@@ -36,16 +39,13 @@ nginx-config: ## generate nginx config file
 	sh ./docker/scripts/install/generate-nginx-config.sh $(HOST)
 
 install-symfony: ## install symfony
-	$(CORE_CLI) sh ./docker/scripts/install/install-symfony.sh $(FULL_WEB)
+	$(PHP_CLI) sh ./docker/scripts/install/install-symfony.sh $(FULL_WEB)
 
 up: ## docker-compose up -d with good env variables
 	$(CMD_DOCKER_COMPOSE) up -d
-
-build: ## docker-compose build
-	$(CMD_DOCKER_COMPOSE) build --no-cache
 
 stop: ## docker-compose stop
 	$(CMD_DOCKER_COMPOSE) --profile debug --profile build stop
 
 ssh-php: ## Ssh into php container
-	$(CMD_DOCKER_COMPOSE) exec php sh
+	$(PHP_CLI) sh
