@@ -1,6 +1,6 @@
 services:
   php:
-    image: gibass/php
+    image: gibass/php:8.4
     container_name: ${PROJECT_NAME}-php
     environment:
       SYMFONY_VERSION: ${SYMFONY_VERSION:-}
