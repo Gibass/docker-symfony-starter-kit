@@ -1,29 +1,26 @@
 MAKEFLAGS += --silent
 
-ifneq (,$(wildcard .env))
-	include .env
-endif
-
 ifndef ENV
 	ENV=dev
+endif
+
+ifneq (,$(wildcard .env))
+	include .env
+else
+	include ./env/.env.$(ENV).dist
 endif
 
 # Executable
 WORKSPACE:=$(shell pwd)
 UID:=$(shell id -u)
 
-DOCKER_COMPOSE_FILE=${WORKSPACE}/docker/compose/docker-compose.yml
-CMD_DOCKER_COMPOSE=docker-compose -f ${DOCKER_COMPOSE_FILE} --project-directory ${WORKSPACE} ## Point docker to directory's root to find env file
-
-CORE_CLI=$(CMD_DOCKER_COMPOSE) exec --user www-data core
-CORE_CLI_ROOT=$(CMD_DOCKER_COMPOSE) exec core
-
-ifneq ($(ENV),dev)
-	COMPOSERARG?=--no-dev
-endif
-
 export WORKSPACE
 export UID
+
+DOCKER_COMPOSE_FILE=${WORKSPACE}/docker/compose/docker-compose.yml
+CMD_DOCKER_COMPOSE=docker compose -f ${DOCKER_COMPOSE_FILE} --project-directory ${WORKSPACE} ## Point docker to directory's root to find env file
+
+PHP_CLI=$(CMD_DOCKER_COMPOSE) exec --user www-data php
 
 install: ## Install project dependencies
 	$(info --> Install for ENV: ${ENV})
@@ -42,19 +39,13 @@ nginx-config: ## generate nginx config file
 	sh ./docker/scripts/install/generate-nginx-config.sh $(HOST)
 
 install-symfony: ## install symfony
-	$(CORE_CLI) sh ./docker/scripts/install/install-symfony.sh $(FULL_WEB)
+	$(PHP_CLI) sh ./docker/scripts/install/install-symfony.sh $(FULL_WEB)
 
 up: ## docker-compose up -d with good env variables
 	$(CMD_DOCKER_COMPOSE) up -d
 
-build: ## docker-compose build
-	$(CMD_DOCKER_COMPOSE) build --no-cache
-
 stop: ## docker-compose stop
 	$(CMD_DOCKER_COMPOSE) --profile debug --profile build stop
 
-php-install-dependencies: ## Composer install
-	$(CORE_CLI) composer install $(COMPOSERARG)
-
-ssh-core: ## Ssh into php container (www-data)
-	$(CORE_CLI) sh
+ssh-php: ## Ssh into php container
+	$(PHP_CLI) sh

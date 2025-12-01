@@ -3,9 +3,9 @@
 </h1>
 
 <p align="center">
-    <a href="#"><img src="https://img.shields.io/badge/php-^8.2-purple.svg?logo=php" alt="PHP version"/></a>
-    <a href="#"><img src="https://img.shields.io/badge/composer-latest-blue.svg?logo=composer" alt="PHP version"/></a>
-    <a href="#"><img src="https://img.shields.io/github/license/Naereen/StrapDown.js.svg"/></a>
+    <a href="#"><img src="https://img.shields.io/badge/php-^8.4-purple.svg?logo=php" alt="PHP version"/></a>
+    <a href="#"><img src="https://img.shields.io/badge/composer-latest-blue.svg?logo=composer" alt="composer"/></a>
+    <a href="#"><img src="https://img.shields.io/github/license/Naereen/StrapDown.js.svg" alt="license"/></a>
 </p>
 
 <p align="center">
@@ -37,12 +37,13 @@ ENV=dev
 DEBUG=true
 
 ## Install env var
-SCRIPTS_DIR=/var/www/html/docker/scripts/entrypoint
+APP_DIR=/var/www/html
+SCRIPTS_DIR="${APP_DIR}/docker/scripts/entrypoint"
 PROJECT_NAME=starter-kit-symfony
-SYMFONY_VERSION=6.3.*
+SYMFONY_VERSION=7.3.*
 PROJECT_TYPE=web
 FULL_WEB=false
-HOST=dev-starter-kit-symfony.mg
+HOST=dev.symfony-starter.mg
 
 ## Database
 ROOT_PASSWORD=root
@@ -52,7 +53,8 @@ MYSQL_USERNAME=dbuser
 MYSQL_PASSWORD=dbpassword
 ```
 
-- ``SCRIPTS_DIR`` : Script to be run when starting container
+- ``APP_DIR`` : your app directory volume
+- ``SCRIPTS_DIR`` : a directory to run scripts on container start (ex: file-permission.sh to set file permission)
 - ``PROJECT_NAME`` : your project name
 - ``SYMFONY_VERSION`` : The version of symfony that will be installed
 - ``PROJECT_TYPE`` : a `web` or `console` project
@@ -63,11 +65,14 @@ Database configurations
 - ``ROOT_PASSWORD`` : the root password
 - ``MYSQL_DB_HOST`` : the database container name or external database host
 - ``MYSQL_DB_NAME`` : name of the database
-- ``MYSQL_USERNAME`` : username to access database
-- ``MYSQL_PASSWORD`` : user password to access database
+- ``MYSQL_USERNAME`` : username to access a database
+- ``MYSQL_PASSWORD`` : user password to access a database
 
-### 2- Project Installation
-After creating and configure the `.env` file, run install with a `make install` command  
+### 2- Configure your hosts
+Add your domain to your hosts file ``(/etc/hosts)`` (ex: ``127.0.0.1 dev.symfony-starter.mg``)
+
+### 3- Project Installation
+After configuring the env file in `env/` folder, run installation with a `make install` command  
 
 ```shell
 make install
